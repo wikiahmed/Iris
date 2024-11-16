@@ -1,0 +1,20 @@
+<html>
+<body>
+    <div class="login">
+        <h1>SPECIES PREDICTION</h1>
+
+        <!--Main Input for Receiving Query to our ML-->
+        <form action="{{ url_for('predict_datapoint') }}" method="post">
+            <input type="text" name="sepal_length" placeholder="Sepal Length" required="required"/><br>
+            <input type="text" name="sepal_width" placeholder="Sepal Width" required="required"/><br>
+            <input type="text" name="petal_length" placeholder="Petal Length" required="required"/><br>
+            <input type="text" name="petal_width" placeholder="Petal Width" required="required"/><br>
+            
+            <button type="submit" class="btn btn-primary btn-large">Predict</button>            
+        </form>
+    <h2>
+        THE SPECIES PREDICTION is: {{ result }}
+    </h2>
+</div>
+</body>
+</html>
