@@ -1,40 +1,42 @@
+from flask import Flask, render_template, request
 import pickle
-from flask import Flask, request, render_template
 import numpy as np
 
-application = Flask(__name__)
-app=application
-# Load the classifier and scaler
-CLF = pickle.load(open('model/CLF.pkl', 'rb'))
-SS = pickle.load(open('model/SS.pkl', 'rb')) 
+app = Flask(__name__)
 
-# Home Route
+# Load the trained model
+with open("model/iris_model.pkl", "rb") as file:
+    model, labels = pickle.load(file)
+
+# Routes
 @app.route('/')
 def index():
-    return render_template('home.html')  # Ensuring consistency with 'home.html'
+    return render_template('index.html')
 
-# Prediction Route
-@app.route('/predictdata', methods=['GET', 'POST'])
-def predict_datapoint():
-    if request.method == 'POST':
-        try:
-            # Retrieve form data
-            sepal_length = float(request.form.get('sepal_length'))
-            sepal_width  = float(request.form.get('sepal_width'))
-            petal_length = float(request.form.get('petal_length'))
-            petal_width  = float(request.form.get('petal_width'))
+@app.route('/predict', methods=['POST'])
+def predict():
+    # Get user inputs
+    sepal_length = float(request.form['sepal_length'])
+    sepal_width = float(request.form['sepal_width'])
+    petal_length = float(request.form['petal_length'])
+    petal_width = float(request.form['petal_width'])
+    
+    # Prediction
+    features = np.array([[sepal_length, sepal_width, petal_length, petal_width]])
+    prediction = model.predict(features)[0]
+    species_name = labels[prediction]
 
-            # Transform the input data and predict
-            new_data = SS.transform([[sepal_length, sepal_width, petal_length, petal_width]])
-            result = CLF.predict(new_data)[0]  # Get the first prediction result
+    # Mapping species to images
+    species_images = {
+        "setosa": "setosa.jpg",
+        "versicolor": "versicolor.jpg",
+        "virginica": "virginica.jpg"
+    }
+    species_image = species_images[species_name.lower()]
 
-            return render_template('home.html', result=result)
+    return render_template(
+        'result.html', species_name=species_name, species_image=species_image
+    )
 
-        except Exception as e:
-            # Handle any exception and display an error message
-            return render_template('home.html', result="Error: " + str(e))
-
-    return render_template('home.html')
-
-if __name__ == "__main__":
-    app.run(debug=True, host="0.0.0.0")
+if __name__ == '__main__':
+    app.run(debug=True)
